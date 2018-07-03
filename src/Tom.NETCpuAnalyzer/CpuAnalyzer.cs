@@ -40,6 +40,8 @@ namespace Tom.NETCpuAnalyzer
         {
             try
             {
+                var stopwt = new Stopwatch();
+
                 var sb = new StringBuilder();
                 var process = Process.GetProcessById(pid);
                 var counters = new Dictionary<string, MyThreadCounterInfo>();
@@ -52,6 +54,8 @@ namespace Tom.NETCpuAnalyzer
                 Console.WriteLine("1、正在收集计数器");
                 var cate = new PerformanceCounterCategory("Thread");
                 string[] instances = cate.GetInstanceNames();
+                Console.WriteLine("instances总数：{0}", instances.Length);
+                stopwt.Start();
                 foreach (string instance in instances)
                 {
                     if (instance.StartsWith(process.ProcessName, StringComparison.CurrentCultureIgnoreCase))
@@ -61,7 +65,10 @@ namespace Tom.NETCpuAnalyzer
                         counters.Add(instance, new MyThreadCounterInfo(counter1, counter2));
                     }
                 }
-
+                
+                var i = 0;
+                Console.WriteLine("counters总数：{0} {1}ms", counters.Count, stopwt.ElapsedMilliseconds);
+                stopwt.Restart();
                 foreach (var pair in counters)
                 {
                     try
@@ -71,10 +78,14 @@ namespace Tom.NETCpuAnalyzer
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("#{0} {1}", i, ex.Message);
                     }
+                    i++;
                 }
+                Console.WriteLine("counters foreach {0}ms", stopwt.ElapsedMilliseconds);
                 Thread.Sleep(5000);
+                stopwt.Restart();
+                i = 0;
                 foreach (var pair in counters)
                 {
                     try
@@ -87,12 +98,17 @@ namespace Tom.NETCpuAnalyzer
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("#{0} {1}", i, ex.Message);
                     }
+                    i++;
                 }
+                i = 0;
+                Console.WriteLine("counters foreach 2 {0}ms", stopwt.ElapsedMilliseconds);
+                stopwt.Restart();
 
                 Console.WriteLine("2、正在收集线程信息");
                 ProcessThreadCollection collection = process.Threads;
+                Console.WriteLine("Threads总数：{0}", collection.Count);
                 foreach (ProcessThread thread in collection)
                 {
                     try
@@ -109,6 +125,8 @@ namespace Tom.NETCpuAnalyzer
                         Console.WriteLine(ex.Message);
                     }
                 }
+                Console.WriteLine("完成收集线程信息 {0}ms", stopwt.ElapsedMilliseconds);
+                stopwt.Restart();
 
                 var debugger = new MDbgEngine();
                 MDbgProcess proc = null;
