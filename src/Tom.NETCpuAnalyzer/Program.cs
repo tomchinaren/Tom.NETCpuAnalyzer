@@ -17,6 +17,7 @@ namespace Tom.NETCpuAnalyzer
                 }
                 else
                 {
+                    Console.WriteLine("请输入要分析的PID：");
                     var strpid = Console.ReadLine();
                     pid = int.Parse(strpid);
                 }
